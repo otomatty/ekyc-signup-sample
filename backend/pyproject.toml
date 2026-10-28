@@ -1,0 +1,13 @@
+[project]
+name = "ekyc-sample-backend"
+version = "0.1.0"
+description = "WEB申込 × eKYC 改修を学ぶためのサンプル（FastAPI）"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
