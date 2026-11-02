@@ -2,7 +2,7 @@
 
 携帯電話回線の Web 申込に、マイナンバーカードによる本人確認（eKYC）を組み込む改修を、小さく再現した学習用プロジェクトです。
 
-- **frontend**: Vue 3 ＋ TypeScript（申込、本人確認、結果の3画面）
+- **frontend**: Vue 3 ＋ TypeScript（申込、本人確認、結果の3画面）。部品は Base UI（Vue 版）、見た目はデジタル庁デザインシステムに準拠
 - **backend**: FastAPI（申込 API、本人確認 API、Webhook 受信、照合ロジック）
 - **batch**: Python（kintone への同期）
 - **モック**: eKYC ベンダーと kintone のモックを backend に同梱。外部サービスなしで最後まで動きます
@@ -82,7 +82,7 @@ python -m batch.sync_to_kintone             # 同期
 
 ```bash
 cd backend && pytest -v           # 45件
-cd frontend && npm test           # 7件
+cd frontend && npm test           # 13件
 cd frontend && npm run typecheck
 ```
 
@@ -118,6 +118,26 @@ ekyc-sample/
     ├── design/                   # 設計書
     └── catchup/                  # キャッチアップ資料
 ```
+
+---
+
+## 画面のデザイン
+
+| 観点 | 採用したもの |
+|---|---|
+| 部品 | [Base UI](https://base-ui.com/) の Vue 版 [base-ui-vue](https://baseui-vue.com/)（Field、Fieldset、RadioGroup、Radio、Input、Button）。見た目を持たない部品で、ラベルやエラーの紐づけ（`aria-describedby`、`aria-invalid` など）とキーボード操作を受け持つ |
+| デザインの基準 | [デジタル庁デザインシステム](https://design.digital.go.jp/)（DADS）。公式のデザイントークン（`@digital-go-jp/design-tokens`）を読み込み、入力欄・要否ラベル・エラー・フォーカスリング・ボタンの寸法や状態を DADS のコンポーネントに合わせている |
+| 色 | キーカラーを楽天モバイルのブランドカラー（マゼンタ）に差し替えている。値は `frontend/src/style.css` の `--key-*` にまとめてある |
+
+DADS に合わせて、フォームは次のようにしています。
+
+- ラベルの横に「※必須」「任意」を表示する
+- 入力例はプレースホルダーではなく、ラベルの下のサポートテキストに書く
+- 生年月日は年・月・日を別々の欄で入力する（カレンダーは使わない）
+- 選択肢が少ない項目（性別、料金プラン）はラジオボタンにする
+- 送信時にエラーがあれば、フォームの先頭にエラーのまとめを出してフォーカスを移し、各項目へのリンクを並べる
+
+> マゼンタの値（`#E4007F`）は、公式の色指定を確認できなかったため、一般的なマゼンタの値を仮に置いています。実際の案件では、ブランドガイドラインの値に差し替えてください。
 
 ---
 
