@@ -4,6 +4,43 @@ export type FormErrors = Partial<Record<keyof ApplicationForm, string>>
 
 export const MIN_AGE = 18
 
+/** 生年月日の入力欄（年・月・日を別々に入力する）で扱う値 */
+export interface DateParts {
+  year: string
+  month: string
+  day: string
+}
+
+/** 全角数字を半角にし、前後の空白を除く。年月日の入力欄は全角で入力されることもある */
+function toHalfWidthDigits(value: string): string {
+  return value.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).trim()
+}
+
+/** 年・月・日を 'YYYY-MM-DD' にまとめる。すべて空なら ''（未入力）を返す */
+export function joinDateParts(parts: DateParts): string {
+  const year = toHalfWidthDigits(parts.year)
+  const month = toHalfWidthDigits(parts.month)
+  const day = toHalfWidthDigits(parts.day)
+  if (!year && !month && !day) return ''
+  const pad = (v: string) => (/^\d$/.test(v) ? `0${v}` : v)
+  return `${year}-${pad(month)}-${pad(day)}`
+}
+
+/** 'YYYY-MM-DD' を年・月・日に分ける（サンプル入力などで外から値が入ったときに使う） */
+export function splitDate(value: string): DateParts {
+  const [year = '', month = '', day = ''] = value ? value.split('-') : []
+  return { year, month, day }
+}
+
+/** 'YYYY-MM-DD' の形で、実在する日付か（2月30日などを弾く） */
+export function isValidDate(value: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!m) return false
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  const date = new Date(Date.UTC(y, mo - 1, d))
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d
+}
+
 export function ageOn(birthDate: string, today: Date): number {
   const [y, m, d] = birthDate.split('-').map(Number)
   if (!y || !m || !d) return Number.NaN
@@ -21,6 +58,8 @@ export function validateApplication(form: ApplicationForm, today = new Date()): 
   else if (!/[ 　]/.test(name)) errors.name = '姓と名の間にスペースを入れてください'
 
   if (!form.birth_date) errors.birth_date = '生年月日を入力してください'
+  else if (!isValidDate(form.birth_date))
+    errors.birth_date = '生年月日を確認してください（例: 1990年4月1日）'
   else if (!(ageOn(form.birth_date, today) >= MIN_AGE))
     errors.birth_date = `${MIN_AGE}歳以上の方のみお申込みいただけます`
 

@@ -28,7 +28,7 @@
 | 後片付け | `useEffect` の戻り値 | `onUnmounted()`、`onScopeDispose()` | `composables/usePolling.ts` |
 | 画面の記述 | JSX | テンプレート | 各 `.vue` |
 | 条件 | `{cond && <A/>}`、三項演算子 | `v-if`、`v-else-if`、`v-else` | `FormField.vue` |
-| 繰り返し | `items.map(i => <li key=...>)` | `v-for="i in items" :key="..."` | `FormField.vue` |
+| 繰り返し | `items.map(i => <li key=...>)` | `v-for="i in items" :key="..."` | `RadioField.vue` |
 | 属性の値を式に | `value={x}` | `:value="x"`（`v-bind` の省略形） | 各所 |
 | イベント | `onClick={fn}` | `@click="fn"`（`v-on` の省略形） | 各所 |
 | フォーム入力 | `value` ＋ `onChange` | `v-model` | `ApplyPage.vue` |
@@ -103,6 +103,8 @@ defineProps<{ label: string }>()
 ```
 
 React なら `value` と `onChange` の2つの props を作るところを、`defineModel` 1つで済ませています。
+
+実際の `FormField.vue` では、中の入力欄に Base UI の `Input` を使っています。`Input` は `v-model` ではなく `:value` と `@value-change` で値をやり取りするので、受け取った値を `model` に代入しています（`@value-change="(value) => (model = value)"`）。
 
 ### 3.5 親へのイベント通知（emit）
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { Button } from 'base-ui-vue'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/api/client'
+import NotificationBanner from '@/components/NotificationBanner.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import { usePolling } from '@/composables/usePolling'
 import { useApplicationStore } from '@/stores/application'
@@ -37,8 +39,8 @@ function startOver() {
 </script>
 
 <template>
-  <section class="card" aria-live="polite">
-    <h2>本人確認の結果</h2>
+  <section class="card" aria-live="polite" aria-labelledby="result-title">
+    <h2 id="result-title" class="card__title">本人確認の結果</h2>
 
     <div v-if="!data && isPolling" class="loading">
       <span class="spinner" aria-hidden="true"></span>
@@ -48,7 +50,7 @@ function startOver() {
     <template v-if="data">
       <div class="result-head">
         <StatusBadge :status="data.status" :label="data.status_label" />
-        <span class="muted">{{ data.masked_name }} 様</span>
+        <span class="result-head__name">{{ data.masked_name }} 様</span>
       </div>
       <p class="result-message">{{ data.message }}</p>
 
@@ -66,22 +68,24 @@ function startOver() {
           <tr v-for="item in data.match_items" :key="item.field">
             <th scope="row">{{ item.label }}</th>
             <td><span class="result" :class="`result-${item.result.toLowerCase()}`">{{ RESULT_TEXT[item.result] }}</span></td>
-            <td class="muted">{{ item.note || '—' }}</td>
+            <td class="match-table__note">{{ item.note || '—' }}</td>
           </tr>
         </tbody>
       </table>
     </template>
 
-    <p v-if="timedOut" class="alert alert-info">
-      結果の確認に時間がかかっています。しばらくしてからこの画面を再読み込みしてください。
-    </p>
-    <p v-if="error" class="alert alert-danger" role="alert">{{ error.message }}</p>
+    <NotificationBanner v-if="timedOut" type="info" title="結果の確認に時間がかかっています">
+      <p class="banner__text">しばらくしてからこの画面を再読み込みしてください。</p>
+    </NotificationBanner>
+    <NotificationBanner v-if="error" type="error" title="結果を取得できませんでした" role="alert">
+      <p class="banner__text">{{ error.message }}</p>
+    </NotificationBanner>
 
     <div class="actions">
-      <button v-if="data?.can_retry && !isPolling" type="button" class="btn btn-primary" @click="retry">
+      <Button v-if="data?.can_retry && !isPolling" class="button button--primary button--block" @click="retry">
         もう一度本人確認する
-      </button>
-      <button type="button" class="btn btn-ghost" @click="startOver">新しい申込を始める</button>
+      </Button>
+      <Button class="button button--outline button--block" @click="startOver">新しい申込を始める</Button>
     </div>
   </section>
 </template>

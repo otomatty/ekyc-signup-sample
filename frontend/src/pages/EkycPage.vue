@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { Button } from 'base-ui-vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { api, ApiError } from '@/api/client'
+import NotificationBanner from '@/components/NotificationBanner.vue'
 import { useApplicationStore } from '@/stores/application'
 
 const router = useRouter()
@@ -40,9 +42,9 @@ function restart() {
 </script>
 
 <template>
-  <section class="card">
-    <h2>マイナンバーカードで本人確認</h2>
-    <p>お申込みにはマイナンバーカードによる本人確認が必要です。次のものをご用意ください。</p>
+  <section class="card" aria-labelledby="ekyc-title">
+    <h2 id="ekyc-title" class="card__title">マイナンバーカードで本人確認</h2>
+    <p class="card__lead">お申込みにはマイナンバーカードによる本人確認が必要です。次のものをご用意ください。</p>
     <ol class="steps">
       <li>
         <strong>マイナンバーカード</strong>
@@ -58,15 +60,17 @@ function restart() {
       </li>
     </ol>
 
-    <p v-if="!isMobile" class="alert alert-info">
-      PC からアクセスしています。実際のサービスでは、ここで QR コードを表示してスマホに切り替えてもらいます。このサンプルでは、PC のままモック画面に進めます。
-    </p>
+    <NotificationBanner v-if="!isMobile" type="info" title="PC からアクセスしています">
+      <p class="banner__text">実際のサービスでは、ここで QR コードを表示してスマホに切り替えてもらいます。このサンプルでは、PC のままモック画面に進めます。</p>
+    </NotificationBanner>
 
-    <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
+    <NotificationBanner v-if="error" type="error" title="本人確認を開始できませんでした" role="alert">
+      <p class="banner__text">{{ error }}</p>
+    </NotificationBanner>
 
-    <button v-if="sessionExpired" type="button" class="btn btn-primary" @click="restart">最初からやり直す</button>
-    <button v-else type="button" class="btn btn-primary" :disabled="starting" @click="start">
+    <Button v-if="sessionExpired" class="button button--primary button--block" @click="restart">最初からやり直す</Button>
+    <Button v-else class="button button--primary button--block" :disabled="starting" focusable-when-disabled @click="start">
       {{ starting ? '準備しています…' : '本人確認を始める' }}
-    </button>
+    </Button>
   </section>
 </template>
